@@ -1,0 +1,10 @@
+package io.github.configservice.config_service.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.lang.module.Configuration;
+import java.util.Optional;
+
+public interface ConfigEntryRepository extends JpaRepository<Configuration, Long> {
+    Optional<Configuration> findByNamespaceAndEnvironmentAndKeyName(String namespace, String environment, String keyName);
+}
