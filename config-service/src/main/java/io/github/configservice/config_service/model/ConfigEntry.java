@@ -11,6 +11,11 @@ public class ConfigEntry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "namespace_environment_id")
+    private NamespaceEnvironment namespaceEnvironment;
+
     private String namespace;
     private String environment;
     private String keyName;
