@@ -2,7 +2,6 @@ package io.github.configservice.config_service.service;
 
 import io.github.configservice.config_service.exception.ConfigNotFoundException;
 import io.github.configservice.config_service.model.ConfigEntry;
-import io.github.configservice.config_service.model.ConfigEntryHistory;
 import io.github.configservice.config_service.repository.ConfigEntryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +17,11 @@ public class ConfigEntryService {
 
     private final ConfigEntryRepository repository;
     private final ConfigEntryUpdater updater;
-    private final ConfigEntryHistoryService historyService;
     private final ConfigChangePublisher publisher;
 
-    public ConfigEntryService(ConfigEntryRepository repository, ConfigEntryUpdater updater, ConfigEntryHistoryService historyService, ConfigChangePublisher publisher) {
+    public ConfigEntryService(ConfigEntryRepository repository, ConfigEntryUpdater updater, ConfigChangePublisher publisher) {
         this.repository = repository;
         this.updater = updater;
-        this.historyService = historyService;
         this.publisher = publisher;
     }
 
@@ -44,16 +41,6 @@ public class ConfigEntryService {
 
     public ConfigEntry updateConfig(ConfigEntry existing, String newValue, LocalDateTime now){
         log.info("Updating existing config. ID: {}, chave: {}", existing.getId(), existing.getKeyName());
-
-        historyService.save(
-                new ConfigEntryHistory(
-                        existing.getId(),
-                        existing.getKeyName(),
-                        existing.getValue(),
-                        newValue,
-                        now
-                )
-        );
 
         ConfigEntry updated = repository.save(updater.applyUpdate(existing, newValue, now));
 
