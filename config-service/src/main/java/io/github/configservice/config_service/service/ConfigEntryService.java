@@ -2,6 +2,7 @@ package io.github.configservice.config_service.service;
 
 import io.github.configservice.config_service.dto.ConfigEntryBatchDTO;
 import io.github.configservice.config_service.dto.ConfigEntryResponseDTO;
+import io.github.configservice.config_service.event.EventType;
 import io.github.configservice.config_service.exception.ConfigNotFoundException;
 import io.github.configservice.config_service.model.ConfigEntry;
 import io.github.configservice.config_service.model.Environment;
@@ -24,20 +25,17 @@ public class ConfigEntryService {
     private static final Logger log = LoggerFactory.getLogger(ConfigEntryService.class);
 
     private final ConfigEntryRepository configRepo;
-    private final EnvironmentRepository envRepo;
     private final KafkaProducerService kafkaProducerService;
     private final NamespaceService namespaceService;
     private final EnvironmentService environmentService;
     private final ConfigEntryUnitService configEntryUnitService;
 
     public ConfigEntryService(ConfigEntryRepository configRepo,
-                              EnvironmentRepository envRepo,
                               KafkaProducerService kafkaProducerService,
                               NamespaceService namespaceService,
                               EnvironmentService environmentService,
                               ConfigEntryUnitService configEntryUnitService) {
         this.configRepo = configRepo;
-        this.envRepo = envRepo;
         this.kafkaProducerService = kafkaProducerService;
         this.namespaceService = namespaceService;
         this.environmentService = environmentService;
@@ -63,26 +61,21 @@ public class ConfigEntryService {
     }
 
     @Transactional
-    public void saveConfigurationTree(ConfigEntryBatchDTO entry) {
-        log.info("Starting configuration tree save for namespace='{}'", entry.getKey());
+    public void saveConfigurationTree(ConfigEntryBatchDTO batchDTO ) {
+        log.info("Starting configuration tree save for namespace='{}'", batchDTO .getKey());
 
-        Namespace namespace = namespaceService.findOrCreate(entry.getKey(), entry.getDescription());
+        Namespace namespace = namespaceService.findOrCreate(batchDTO.getKey(), batchDTO.getDescription());
 
-        entry.getEnvironments().forEach(envDto -> {
+        batchDTO .getEnvironments().forEach(envDto -> {
             Environment environment = environmentService.findOrCreate(envDto.getKey(), envDto.getDescription(), namespace);
 
-            int configCount = envDto.getConfigs().size();
+            List<ConfigEntryBatchDTO.ConfigDTO> configs = envDto.getConfigs();
 
-            envDto.getConfigs().forEach(configDto -> {
+            configs.forEach(configDto -> {
                 configEntryUnitService.save(configDto.getKey(), configDto.getValue(), configDto.getDescription(), environment);
             });
 
-            if (configCount == 1) {
-                String configKey = envDto.getConfigs().get(0).getKey();
-                kafkaProducerService.publishUpdateEvent(namespace.getKey(), environment.getKey(), configKey);
-            } else {
-                kafkaProducerService.publishSyncForceEvent(namespace.getKey(), environment.getKey());
-            }
+            notifyKafka(configs, namespace.getKey(), environment.getKey());
         });
     }
 
@@ -95,7 +88,7 @@ public class ConfigEntryService {
         if (existing.isPresent()){
             configRepo.delete(existing.get());
             log.info("Configuration removed successfully. key='{}'", key);
-            kafkaProducerService.publishDeleteEvent(namespace, env, key);
+            kafkaProducerService.publishEvent(EventType.DELETE, namespace, env, key);
             return true;
         } else {
             log.warn("Configuration for deletion not found. key='{}'", key);
@@ -109,5 +102,13 @@ public class ConfigEntryService {
                 configEntry.getValue(),
                 configEntry.getUpdatedAt()
         );
+    }
+
+    private void notifyKafka(List<ConfigEntryBatchDTO.ConfigDTO> configs, String namespace, String env) {
+        if (configs.size() == 1) {
+            kafkaProducerService.publishEvent(EventType.UPDATE, namespace, env, configs.get(0).getKey());
+        } else if (configs.size() > 1) {
+            kafkaProducerService.publishEvent(EventType.SYNC, namespace, env, null);
+        }
     }
 }

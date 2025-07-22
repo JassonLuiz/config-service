@@ -1,5 +1,6 @@
 package io.github.configservice.config_service.service;
 
+import io.github.configservice.config_service.event.EventType;
 import io.github.configservice.config_service.repository.ConfigEntryRepository;
 import io.github.configservice.config_service.repository.EnvironmentRepository;
 import org.slf4j.Logger;
@@ -21,15 +22,15 @@ public class SyncService {
     }
 
     public boolean forceSync(String namespace, String env) {
-        boolean exists = configRepo.existsByEnvironment_KeyAndEnvironment_Namespace_Key(env, namespace);
+        boolean environmentExists = configRepo.existsByEnvironment_KeyAndEnvironment_Namespace_Key(env, namespace);
 
-        if (!exists) {
+        if (!environmentExists) {
             log.warn("Sync ignored - environment not found: namespace='{}', env='{}'", namespace, env);
             return false;
         }
 
         log.info("Triggering sync-force for namespace='{}', env='{}'", namespace, env);
-        kafkaProducerService.publishSyncForceEvent(namespace, env);
+        kafkaProducerService.publishEvent(EventType.SYNC ,namespace, env, null);
         return true;
     }
 }

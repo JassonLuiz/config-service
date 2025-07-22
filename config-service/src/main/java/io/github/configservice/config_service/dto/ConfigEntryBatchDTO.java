@@ -1,10 +1,13 @@
 package io.github.configservice.config_service.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class ConfigEntryBatchDTO {
 
+    @NotBlank(message = "Namespace key must not be blank")
     private String key;
     private String description;
     private List<EnvironmentDTO> environments;
@@ -34,6 +37,7 @@ public class ConfigEntryBatchDTO {
     }
 
     public static class EnvironmentDTO {
+        @NotBlank(message = "Environment key must not be blank")
         private String key;
         private String description;
         private List<ConfigDTO> configs;
@@ -64,7 +68,10 @@ public class ConfigEntryBatchDTO {
     }
 
     public static class ConfigDTO {
+        @NotBlank(message = "Configuration key must not be blank")
         private String key;
+
+        @NotBlank(message = "Configuration value must not be blank")
         private String value;
         private String description;
         private LocalDateTime updatedAt;

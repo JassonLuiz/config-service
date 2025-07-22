@@ -1,12 +1,12 @@
 package io.github.configservice.config_service.service;
 
 import io.github.configservice.config_service.event.ConfigChangedEvent;
+import io.github.configservice.config_service.event.EventType;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -28,21 +28,9 @@ public class KafkaProducerService {
         this.kafkaAdmin = kafkaAdmin;
     }
 
-    public void publishSyncForceEvent(String namespace, String env){
+    public void publishEvent(EventType eventType, String namespace, String env, String key){
         String correlationId = getOrGenerateCorrelationId();
-        ConfigChangedEvent event = new ConfigChangedEvent("sync", namespace, env, null, correlationId);
-        sendEvent(buildTopicName(namespace, env), event);
-    }
-
-    public void publishUpdateEvent(String namespace, String env, String key){
-        String correlationId = getOrGenerateCorrelationId();
-        ConfigChangedEvent event = new ConfigChangedEvent("update", namespace, env, key, correlationId);
-        sendEvent(buildTopicName(namespace, env), event);
-    }
-
-    public void publishDeleteEvent(String namespace, String env, String key){
-        String correlationId = getOrGenerateCorrelationId();
-        ConfigChangedEvent event = new ConfigChangedEvent("delete", namespace, env, key, correlationId);
+        ConfigChangedEvent event = new ConfigChangedEvent(eventType, namespace, env, key, correlationId);
         sendEvent(buildTopicName(namespace, env), event);
     }
 
