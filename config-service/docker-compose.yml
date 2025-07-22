@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: configdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+    networks:
+      - config-net
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -20,6 +22,8 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
+    networks:
+      - config-net
 
   kafka:
     image: confluentinc/cp-kafka:7.4.0
@@ -35,13 +39,23 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,DOCKER://0.0.0.0:29092
       KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+      KAFKA_TOPIC_CREATE_ATTEMPTS: 5
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - config-net
 
   redis:
     image: redis:7
     container_name: config-redis
     ports:
       - "6379:6379"
+    networks:
+      - config-net
 
   kafdrop:
     image: obsidiandynamics/kafdrop
@@ -53,7 +67,13 @@ services:
     environment:
       KAFKA_BROKER_CONNECT: kafka:29092
       SERVER_PORT: 9000
+    networks:
+      - config-net
+    restart: always
 
 volumes:
   postgres_data:
+
+networks:
+  config-net:
 

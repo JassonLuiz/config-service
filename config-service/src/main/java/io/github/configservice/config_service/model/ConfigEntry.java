@@ -3,67 +3,45 @@ package io.github.configservice.config_service.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "config_entries")
 public class ConfigEntry {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    private UUID id;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "namespace_environment_id")
-    private NamespaceEnvironment namespaceEnvironment;
-
-    private String namespace;
-    private String environment;
-    private String keyName;
+    private String key;
     private String value;
-    private Integer version;
+    private String description;
     private LocalDateTime updatedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "environment_id")
+    private Environment environment;
 
     public ConfigEntry() {}
 
-    public ConfigEntry(String namespace, String environment, String keyName, String value, Integer version, LocalDateTime updatedAt) {
-        this.namespace = namespace;
-        this.environment = environment;
-        this.keyName = keyName;
+    public ConfigEntry(UUID id, String key, String value, String description, LocalDateTime updatedAt, Environment environment) {
+        this.id = id;
+        this.key = key;
         this.value = value;
-        this.version = version;
+        this.description = description;
         this.updatedAt = updatedAt;
+        this.environment = environment;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getKey() {
+        return key;
     }
 
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
-    public String getEnvironment() {
-        return environment;
-    }
-
-    public void setEnvironment(String environment) {
-        this.environment = environment;
-    }
-
-    public String getKeyName() {
-        return keyName;
-    }
-
-    public void setKeyName(String keyName) {
-        this.keyName = keyName;
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public String getValue() {
@@ -74,12 +52,12 @@ public class ConfigEntry {
         this.value = value;
     }
 
-    public Integer getVersion() {
-        return version;
+    public String getDescription() {
+        return description;
     }
 
-    public void setVersion(Integer version) {
-        this.version = version;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public LocalDateTime getUpdatedAt() {
@@ -88,5 +66,13 @@ public class ConfigEntry {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 }
