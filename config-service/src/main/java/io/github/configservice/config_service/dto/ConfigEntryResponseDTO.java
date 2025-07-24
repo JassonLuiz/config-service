@@ -5,5 +5,5 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
-public record ConfigEntryResponseDTO(String Key, String value, LocalDateTime updatedAt) {
+public record ConfigEntryResponseDTO(String key, String value, LocalDateTime updatedAt) {
 }
