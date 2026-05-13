@@ -15,7 +15,7 @@ on:
 
 jobs:
   build:
-    name: Build - ${{ inputs.project-path }}
+    name: Build & Validate
     runs-on: ubuntu-latest
 
     steps:
@@ -30,18 +30,19 @@ jobs:
           cache: maven
 
       - name: 🔍 Checkstyle
-        working-directory: ${{ inputs.project-path }}
         run: |
+          cd $GITHUB_WORKSPACE/${{ inputs.project-path }}
           mvn checkstyle:check --no-transfer-progress \
-            -Dcheckstyle.config.location=${{ github.workspace }}/checkstyle.xml
+            -Dcheckstyle.config.location=$GITHUB_WORKSPACE/checkstyle.xml
 
       - name: 🏗️ Build
-        working-directory: ${{ inputs.project-path }}
-        run: mvn clean package -DskipTests --no-transfer-progress
+        run: |
+          cd $GITHUB_WORKSPACE/${{ inputs.project-path }}
+          mvn clean package -DskipTests --no-transfer-progress
 
       - name: ✅ Verificar artefato gerado
-        working-directory: ${{ inputs.project-path }}
         run: |
+          cd $GITHUB_WORKSPACE/${{ inputs.project-path }}
           if [ -z "$(find target -name '*.jar' -not -name '*sources*')" ]; then
             echo "❌ Nenhum JAR encontrado em ${{ inputs.project-path }}!"
             exit 1
