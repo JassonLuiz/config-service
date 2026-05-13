@@ -31,7 +31,9 @@ jobs:
 
       - name: 🔍 Checkstyle
         working-directory: ${{ inputs.project-path }}
-        run: mvn checkstyle:check --no-transfer-progress -Dcheckstyle.config.location=../checkstyle.xml
+        run: |
+          mvn checkstyle:check --no-transfer-progress \
+            -Dcheckstyle.config.location=${{ github.workspace }}/checkstyle.xml
 
       - name: 🏗️ Build
         working-directory: ${{ inputs.project-path }}
