@@ -1,54 +1,72 @@
 package io.github.configservice.config_service.controller;
 
 import io.github.configservice.config_service.dto.ConfigEntryBatchDTO;
-import io.github.configservice.config_service.dto.ConfigEntryResponseDTO;
+import io.github.configservice.config_service.dto.createDTO.ConfigEntryCreateDTO;
+import io.github.configservice.config_service.dto.responseDTO.ConfigEntryResponseDTO;
 import io.github.configservice.config_service.service.ConfigEntryService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/configs")
+@RequestMapping("/api/v1/namespaces/{namespaceKey}/environments/{envKey}/configs")
 public class ConfigEntryController {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigEntryController.class);
-    private final ConfigEntryService service;
+    private final ConfigEntryService configEntryService;
 
-    public ConfigEntryController(ConfigEntryService service) {
-        this.service = service;
+    public ConfigEntryController(ConfigEntryService configEntryService) {
+        this.configEntryService = configEntryService;
     }
 
-    @GetMapping("/namespace/{namespace}/env/{env}")
-    public ResponseEntity<List<ConfigEntryResponseDTO>> findAll(@PathVariable String namespace,
-                                                                @PathVariable String env) {
-        return ResponseEntity.ok(service.getAllByNamespaceAndEnvironment(namespace, env));
+    @GetMapping
+    public ResponseEntity<List<ConfigEntryResponseDTO>> findAll(@PathVariable String namespaceKey,
+                                                                @PathVariable String envKey) {
+        return ResponseEntity.ok(configEntryService.getAllByNamespaceAndEnvironment(namespaceKey, envKey));
     }
 
-    @GetMapping("/namespace/{namespace}/env/{env}/key/{key}")
-    public ResponseEntity<ConfigEntryResponseDTO> findOne(@PathVariable String namespace,
-                                                          @PathVariable String env,
-                                                          @PathVariable String key) {
-        return service.getByKey(namespace, env, key)
+    @GetMapping("/{configKey}")
+    public ResponseEntity<ConfigEntryResponseDTO> findByKey(@PathVariable String namespaceKey,
+                                                            @PathVariable String envKey,
+                                                            @PathVariable String configKey) {
+        return configEntryService.getByKey(namespaceKey, envKey, configKey)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<Void> createOrUpdate(@Valid @RequestBody ConfigEntryBatchDTO dto) {
-        log.info("Received config batch to create/update");
-        service.saveConfigurationTree(dto);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<List<ConfigEntryResponseDTO>> create(@PathVariable String namespaceKey,
+                                                         @PathVariable String envKey,
+                                                         @Valid @RequestBody List<ConfigEntryCreateDTO> dto) {
+        log.info("Creating config with key='{}' for namespace='{}', environment='{}'",
+                dto.size(), namespaceKey, envKey);
+        List<ConfigEntryResponseDTO> created = configEntryService.createConfiguration(namespaceKey, envKey, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @DeleteMapping("/namespace/{namespace}/env/{env}/key/{key}")
-    public ResponseEntity<Void> delete(@PathVariable String namespace,
-                                       @PathVariable String env,
-                                       @PathVariable String key) {
-        boolean deleted = service.deleteConfig(namespace, env, key);
-        return deleted ? ResponseEntity.accepted().build() : ResponseEntity.notFound().build();
+    @PutMapping("/{configKey}")
+    public ResponseEntity<ConfigEntryResponseDTO> update(@PathVariable String namespaceKey,
+                                                         @PathVariable String envKey,
+                                                         @PathVariable String configKey,
+                                                         @Valid @RequestBody ConfigEntryCreateDTO dto) {
+        log.info("Updating config with key='{}' for namespace='{}', environment='{}'",
+                configKey, namespaceKey, envKey);
+        return configEntryService.updateConfiguration(namespaceKey, envKey, configKey, dto)
+                .map(updated -> ResponseEntity.ok(updated))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
+    @DeleteMapping("/{configKey}")
+    public ResponseEntity<Void> delete(@PathVariable String namespaceKey,
+                                       @PathVariable String envKey,
+                                       @PathVariable String configKey) {
+        boolean deleted = configEntryService.deleteConfiguration(namespaceKey, envKey, configKey);
+        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

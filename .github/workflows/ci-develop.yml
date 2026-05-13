@@ -37,7 +37,7 @@ jobs:
             #   - 'novo-projeto/**'
 
   build-config-service:
-    name: Build & Validate
+    name: Build & Validate (config-service)
     needs: detect-changes
     if: needs.detect-changes.outputs.config-service == 'true'
     uses: ./.github/workflows/reusable-build.yml
@@ -45,7 +45,7 @@ jobs:
       project-path: config-service
 
   build-client-library:
-    name: Build & Validate
+    name: Build & Validate (client-library)
     needs: detect-changes
     if: needs.detect-changes.outputs.client-library == 'true'
     uses: ./.github/workflows/reusable-build.yml
@@ -54,12 +54,31 @@ jobs:
 
   # ↓ Adicione novos projetos aqui no futuro
   # build-novo-projeto:
-  #   name: Build & Validate
+  #   name: Build & Validate (novo-projeto)
   #   needs: detect-changes
   #   if: needs.detect-changes.outputs.novo-projeto == 'true'
   #   uses: ./.github/workflows/reusable-build.yml
   #   with:
   #     project-path: novo-projeto
+
+  # ─────────────────────────────────────────────
+  # Job consolidado — sempre roda e reporta o
+  # status geral. É ele que o ruleset monitora.
+  # ─────────────────────────────────────────────
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [build-config-service, build-client-library]
+    if: always()
+    steps:
+      - name: ✅ Verificar resultado geral
+        run: |
+          if [[ "${{ needs.build-config-service.result }}" == "failure" || \
+                "${{ needs.build-client-library.result }}" == "failure" ]]; then
+            echo "❌ Um ou mais builds falharam!"
+            exit 1
+          fi
+          echo "✅ Todos os builds passaram ou foram ignorados corretamente!"
 
   save-artifacts:
     name: Salvar artefatos

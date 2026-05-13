@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface EnvironmentRepository extends JpaRepository<Environment, UUID> {
     Optional<Environment> findByKeyAndNamespace_Key(String key, String namespaceKey);
     List<Environment> findByNamespace_Key(String namespaceKey);
+    List<Environment> findAllByNamespace_Key(String namespaceKey);
+    Optional<Environment> existsByKeyAndNamespace_Key(String key, String namespaceKey);
 }
