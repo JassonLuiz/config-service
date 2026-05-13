@@ -15,7 +15,7 @@ on:
 
 jobs:
   build:
-    name: Build & Validate
+    name: Build & Validate (${{ inputs.project-path }})
     runs-on: ubuntu-latest
 
     steps:
