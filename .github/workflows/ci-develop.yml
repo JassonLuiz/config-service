@@ -67,6 +67,7 @@ jobs:
     needs: [build-config-service, build-client-library]
     if: |
       always() &&
+      github.event_name == 'push' &&
       (needs.build-config-service.result == 'success' || needs.build-config-service.result == 'skipped') &&
       (needs.build-client-library.result == 'success' || needs.build-client-library.result == 'skipped')
 
