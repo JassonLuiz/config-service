@@ -1,0 +1,70 @@
+name: CI - Feature Branch
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+
+  # ─────────────────────────────────────────────
+  # Detecta quais projetos foram alterados
+  # Para adicionar um novo projeto no futuro,
+  # basta adicionar um novo "id" aqui embaixo!
+  # ─────────────────────────────────────────────
+  detect-changes:
+    name: Detectar projetos alterados
+    runs-on: ubuntu-latest
+    outputs:
+      config-service: ${{ steps.filter.outputs.config-service }}
+      client-library: ${{ steps.filter.outputs.client-library }}
+      # ↓ Adicione novos projetos aqui no futuro
+      # novo-projeto: ${{ steps.filter.outputs.novo-projeto }}
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 🔎 Verificar arquivos alterados
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            config-service:
+              - 'config-service/**'
+            client-library:
+              - 'client-library/**'
+            # ↓ Adicione novos projetos aqui no futuro
+            # novo-projeto:
+            #   - 'novo-projeto/**'
+
+  # ─────────────────────────────────────────────
+  # Build de cada projeto (só roda se foi alterado)
+  # ─────────────────────────────────────────────
+  build-config-service:
+    name: Build & Validate
+    needs: detect-changes
+    if: needs.detect-changes.outputs.config-service == 'true'
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      project-path: config-service
+
+  build-client-library:
+    name: Build & Validate
+    needs: detect-changes
+    if: needs.detect-changes.outputs.client-library == 'true'
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      project-path: client-library
+
+  # ↓ Adicione novos projetos aqui no futuro
+  # build-novo-projeto:
+  #   name: Build & Validate
+  #   needs: detect-changes
+  #   if: needs.detect-changes.outputs.novo-projeto == 'true'
+  #   uses: ./.github/workflows/reusable-build.yml
+  #   with:
+  #     project-path: novo-projeto
