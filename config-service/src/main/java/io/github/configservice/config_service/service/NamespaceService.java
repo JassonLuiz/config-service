@@ -1,12 +1,16 @@
 package io.github.configservice.config_service.service;
 
+import io.github.configservice.config_service.dto.createDTO.NamespaceCreateDTO;
+import io.github.configservice.config_service.dto.responseDTO.NamespaceResponseDTO;
 import io.github.configservice.config_service.model.Namespace;
 import io.github.configservice.config_service.repository.NamespaceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class NamespaceService {
@@ -19,21 +23,46 @@ public class NamespaceService {
         this.namespaceRepo = namespaceRepo;
     }
 
-    public Namespace findOrCreate(String key, String description) {
-        log.debug("Looking for existing namespace with key='{}'", key);
+    public List<NamespaceResponseDTO> findAll() {
+        return namespaceRepo.findAll()
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 
-        Optional<Namespace> existing = namespaceRepo.findByKey(key);
+    public Optional<NamespaceResponseDTO> findByKey(String key) {
+        return namespaceRepo.findByKey(key)
+                .map(this::toResponseDTO);
+    }
 
-        if (existing.isPresent()){
-            log.info("Namespace with key='{}' already exists. Reusing it.", key);
-            return existing.get();
+    public NamespaceResponseDTO createNamespace(NamespaceCreateDTO dto) {
+        log.info("Creating namespace with key='{}'", dto.key());
+
+        //Criar exceção NamespaceAlreadyExistsException
+        if (namespaceRepo.existsByKey(dto.key()).isPresent()){
+            log.info("Namespace with key='{}' already exists. Reusing it.", dto.key());
+            throw new RuntimeException("Namespace with key=" + dto.key() + " already exists. Reusing it.");
         }
 
-        log.info("No existing namespace found with key='{}'. Creating new one.", key);
-
         Namespace namespace = new Namespace();
-        namespace.setKey(key);
-        namespace.setDescription(description);
-        return namespaceRepo.save(namespace);
+        namespace.setKey(dto.key());
+        namespace.setDescription(dto.description());
+
+        Namespace saved = namespaceRepo.save(namespace);
+        log.info("Namespace created with key='{}'", saved.getKey());
+
+        return toResponseDTO(saved);
+    }
+
+    //add metodo update
+    //add metodo delete
+
+    public NamespaceResponseDTO toResponseDTO(Namespace namespace) {
+        return new NamespaceResponseDTO(
+                namespace.getKey(),
+                namespace.getDescription(),
+                namespace.getCreatedAt(),
+                namespace.getUpdatedAt()
+        );
     }
 }

@@ -1,5 +1,7 @@
 package io.github.configservice.config_service.event;
 
 public enum EventType {
-    SYNC, UPDATE, DELETE
+    CREATE,
+    UPDATE,
+    DELETE,
 }
