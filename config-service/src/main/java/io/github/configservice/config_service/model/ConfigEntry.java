@@ -12,9 +12,11 @@ public class ConfigEntry {
     @GeneratedValue
     private UUID id;
 
+    @Column(unique = true)
     private String key;
     private String value;
     private String description;
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @ManyToOne
@@ -23,13 +25,25 @@ public class ConfigEntry {
 
     public ConfigEntry() {}
 
-    public ConfigEntry(UUID id, String key, String value, String description, LocalDateTime updatedAt, Environment environment) {
+    public ConfigEntry(UUID id, String key, String value, String description, LocalDateTime createdAt, LocalDateTime updatedAt, Environment environment) {
         this.id = id;
         this.key = key;
         this.value = value;
         this.description = description;
         this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
         this.environment = environment;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public UUID getId() {
@@ -74,5 +88,13 @@ public class ConfigEntry {
 
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

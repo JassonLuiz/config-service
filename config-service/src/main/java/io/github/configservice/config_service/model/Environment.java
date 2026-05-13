@@ -2,6 +2,7 @@ package io.github.configservice.config_service.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +14,7 @@ public class Environment {
     @GeneratedValue
     private UUID id;
 
+    @Column(unique = true)
     private String key;
     private String description;
 
@@ -23,6 +25,9 @@ public class Environment {
     @OneToMany(mappedBy = "environment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConfigEntry> configs = new ArrayList<>();
 
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
     public Environment() {}
 
     public Environment(UUID id, String key, String descricao, Namespace namespace) {
@@ -30,6 +35,17 @@ public class Environment {
         this.key = key;
         this.description = descricao;
         this.namespace = namespace;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public UUID getId() {
@@ -66,5 +82,21 @@ public class Environment {
 
     public void setConfigs(List<ConfigEntry> configs) {
         this.configs = configs;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

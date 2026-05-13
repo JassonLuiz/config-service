@@ -5,3 +5,8 @@
 *.war
 *.log
 .DS_Store
+*.log
+logs/
+CLAUDE.md
+*.py
+*~
