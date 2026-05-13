@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface NamespaceRepository extends JpaRepository<Namespace, UUID> {
     Optional<Namespace> findByKey(String key);
+    Optional<Namespace> existsByKey(String key);
 }

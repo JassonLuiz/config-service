@@ -11,4 +11,5 @@ public interface ConfigEntryRepository extends JpaRepository<ConfigEntry, UUID> 
     Optional<ConfigEntry> findByKeyAndEnvironment_KeyAndEnvironment_Namespace_Key(String Key, String envKey, String namespaceKey);
     List<ConfigEntry> findAllByEnvironment_KeyAndEnvironment_Namespace_Key(String envKey, String namespaceKey);
     boolean existsByEnvironment_KeyAndEnvironment_Namespace_Key(String envKey, String namespaceKey);
+    Optional<ConfigEntry> existsByKeyAndEnvironment_KeyAndEnvironment_Namespace_Key(String key, String envKey, String namespaceKey);
 }

@@ -1,7 +1,6 @@
 package io.github.configservice.config_service.exception.handler;
 
-import io.github.configservice.config_service.exception.ConfigNotFoundException;
-import io.github.configservice.config_service.exception.ErrorResponse;
+import io.github.configservice.config_service.exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,51 +13,97 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(ConfigNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFoundException(ConfigNotFoundException ex, HttpServletRequest request){
-        log.warn("Resource not found: {}", ex.getMessage());
+    @ExceptionHandler(ConfigAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleConfigAlreadyExists(ConfigAlreadyExistsException ex) {
+        log.warn("Configuration already exists: {}", ex.getMessage());
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND));
+        ErrorResponse error = new ErrorResponse(
+                "CONFLICT",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(EnvironmentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEnvironmentNotFound(EnvironmentNotFoundException ex) {
+        log.warn("Environment not found: {}", ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse(
+                "NOT_FOUND",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(ConfigNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleConfigNotFound(ConfigNotFoundException ex){
+        log.warn("Configuration not found: {}", ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse(
+                "NOT_FOUND",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("Invalid argument: {}", ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse(
+                "BAD_REQUEST",
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception ex, HttpServletRequest request){
-        log.error("Internal error: {}", ex.getMessage(), ex);
+    public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
+        log.error("Unexpected error occurred", ex);
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
+        ErrorResponse error = new ErrorResponse(
+                "INTERNAL_SERVER_ERROR",
+                "An unexpected error occurred",
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex){
-        StringBuilder message = new StringBuilder("Validation error in fields: ");
+    public ResponseEntity<ValidationErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
+        log.warn("Validation errors: {}", ex.getMessage());
 
-        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()){
-            message.append(String.format("[%s: %s]", fieldError.getField(), fieldError.getDefaultMessage()));
-        }
-
-        log.warn("Validation error: {}", ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(buildErrorResponse(message.toString(), HttpStatus.BAD_REQUEST));
-
-    }
-
-    public ErrorResponse buildErrorResponse(String message, HttpStatus status) {
-        return new ErrorResponse(
-                message,
-                status.getReasonPhrase(),
-                status.value(),
-                MDC.get("traceId"),
-                LocalDateTime.now()
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
         );
+
+        ValidationErrorResponse errorResponse = new ValidationErrorResponse(
+                "VALIDATION_FAILED",
+                "Validation failed for one or more fields",
+                LocalDateTime.now(),
+                errors
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
 
 }

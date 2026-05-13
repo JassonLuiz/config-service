@@ -1,0 +1,58 @@
+name: CI - Main (Produção)
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-validate:
+    name: Validação Final para Produção
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: ☕ Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 🔍 Verificar formatação e boas práticas (Checkstyle)
+        run: mvn checkstyle:check --no-transfer-progress
+
+      - name: 🏗️ Build final
+        run: mvn clean package -DskipTests --no-transfer-progress
+
+      - name: ✅ Verificar se o artefato foi gerado
+        run: |
+          if [ -z "$(find target -name '*.jar' -not -name '*sources*')" ]; then
+            echo "❌ Nenhum JAR encontrado! O build falhou."
+            exit 1
+          fi
+          echo "✅ Build de produção gerado com sucesso!"
+
+      - name: 📦 Salvar artefato de produção
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-production-${{ github.sha }}
+          path: target/*.jar
+          retention-days: 30
+
+      - name: 🏷️ Criar tag de versão automática
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          VERSION="v$(date +'%Y.%m.%d')-$(echo ${{ github.sha }} | cut -c1-7)"
+          echo "🏷️ Versão gerada: $VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag $VERSION
+          git push origin $VERSION
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,7 +1,6 @@
 package io.github.configservice.config_service.config;
 
-import io.github.configservice.config_service.event.ConfigChangedEvent;
-import jakarta.validation.Valid;
+import io.github.configservice.config_service.event.ConfigEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,24 +22,34 @@ public class KafkaConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, ConfigChangedEvent> producerFactory(){
+    public ProducerFactory<String, ConfigEvent> producerFactory(){
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+        config.put(ProducerConfig.ACKS_CONFIG, "all");
+        config.put(ProducerConfig.RETRIES_CONFIG, 3);
+        config.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
+        config.put(ProducerConfig.LINGER_MS_CONFIG, 10);
+        config.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        config.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, 10485760);
+
         return new DefaultKafkaProducerFactory<>(config);
     }
 
     @Bean
-    public KafkaTemplate<String, ConfigChangedEvent> kafkaTemplate(){
+    public KafkaTemplate<String, ConfigEvent> kafkaTemplate(){
         return new KafkaTemplate<>(producerFactory());
     }
+
 
     @Bean
     public KafkaAdmin kafkaAdmin(){
         Map<String, Object> configs = new HashMap<>();
         configs.put("bootstrap.servers", bootstrapServers);
+        configs.put("request.timeout.ms", 30000);
+        configs.put("connections.max.idle.ms", 300000);
         return new KafkaAdmin(configs);
     }
 }

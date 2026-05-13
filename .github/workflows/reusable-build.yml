@@ -1,0 +1,47 @@
+name: Build Java Project
+
+on:
+  workflow_call:
+    inputs:
+      project-path:
+        description: 'Caminho do projeto (ex: config-service)'
+        required: true
+        type: string
+      java-version:
+        description: 'Versão do Java'
+        required: false
+        type: string
+        default: '21'
+
+jobs:
+  build:
+    name: Build - ${{ inputs.project-path }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: ☕ Configurar Java ${{ inputs.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 🔍 Checkstyle
+        working-directory: ${{ inputs.project-path }}
+        run: mvn checkstyle:check --no-transfer-progress -Dcheckstyle.config.location=../checkstyle.xml
+
+      - name: 🏗️ Build
+        working-directory: ${{ inputs.project-path }}
+        run: mvn clean package -DskipTests --no-transfer-progress
+
+      - name: ✅ Verificar artefato gerado
+        working-directory: ${{ inputs.project-path }}
+        run: |
+          if [ -z "$(find target -name '*.jar' -not -name '*sources*')" ]; then
+            echo "❌ Nenhum JAR encontrado em ${{ inputs.project-path }}!"
+            exit 1
+          fi
+          echo "✅ Build de ${{ inputs.project-path }} gerado com sucesso!"

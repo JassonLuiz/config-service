@@ -1,0 +1,39 @@
+name: CI - Feature Branch
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build-and-validate:
+    name: Build & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: ☕ Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 🔍 Verificar formatação e boas práticas (Checkstyle)
+        run: mvn checkstyle:check --no-transfer-progress
+
+      - name: 🏗️ Build do projeto
+        run: mvn clean package -DskipTests --no-transfer-progress
+
+      - name: ✅ Verificar se o artefato foi gerado
+        run: |
+          if [ -z "$(find target -name '*.jar' -not -name '*sources*')" ]; then
+            echo "❌ Nenhum JAR encontrado! O build falhou."
+            exit 1
+          fi
+          echo "✅ Build gerado com sucesso!"
