@@ -29,20 +29,41 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: 🔎 Diagnóstico de ambiente
+        run: |
+          echo "=== GITHUB_WORKSPACE ==="
+          echo "$GITHUB_WORKSPACE"
+          echo ""
+          echo "=== project-path recebido ==="
+          echo "${{ inputs.project-path }}"
+          echo ""
+          echo "=== Diretório atual ==="
+          pwd
+          echo ""
+          echo "=== Conteúdo da raiz ==="
+          ls -la $GITHUB_WORKSPACE
+          echo ""
+          echo "=== Caminho completo do projeto ==="
+          echo "$GITHUB_WORKSPACE/${{ inputs.project-path }}"
+          echo ""
+          echo "=== Conteúdo do projeto ==="
+          ls -la "$GITHUB_WORKSPACE/${{ inputs.project-path }}" || echo "⚠️ Pasta não encontrada!"
+
       - name: 🔍 Checkstyle
         run: |
-          cd $GITHUB_WORKSPACE/${{ inputs.project-path }}
+          cd "$GITHUB_WORKSPACE/${{ inputs.project-path }}"
+          echo "=== Rodando Checkstyle em: $(pwd) ==="
           mvn checkstyle:check --no-transfer-progress \
-            -Dcheckstyle.config.location=$GITHUB_WORKSPACE/checkstyle.xml
+            -Dcheckstyle.config.location="$GITHUB_WORKSPACE/checkstyle.xml"
 
       - name: 🏗️ Build
         run: |
-          cd $GITHUB_WORKSPACE/${{ inputs.project-path }}
+          cd "$GITHUB_WORKSPACE/${{ inputs.project-path }}"
           mvn clean package -DskipTests --no-transfer-progress
 
       - name: ✅ Verificar artefato gerado
         run: |
-          cd $GITHUB_WORKSPACE/${{ inputs.project-path }}
+          cd "$GITHUB_WORKSPACE/${{ inputs.project-path }}"
           if [ -z "$(find target -name '*.jar' -not -name '*sources*')" ]; then
             echo "❌ Nenhum JAR encontrado em ${{ inputs.project-path }}!"
             exit 1
