@@ -10,8 +10,11 @@ import io.github.configservice.config_service.repository.DeadLetterQueueReposito
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -96,7 +100,7 @@ public class DeadLetterQueueService {
 
     @Scheduled(fixedDelay = 300000)
     @Transactional
-    public void processDeadLetterQ0ueue() {
+    public void processDeadLetterQueue() {
         logger.debug("Starting DLQ processing job");
 
         try {
@@ -282,6 +286,37 @@ public class DeadLetterQueueService {
                     return false;
                 })
                 .orElse(false);
+    }
+
+    public Optional<DeadLetterMessage> getEventById(Long eventId) {
+        return dlqRepository.findById(eventId);
+    }
+
+    public int retryAllFailed() {
+        List<DeadLetterMessage> failedEvents = dlqRepository.findByStatus(DLQStatus.FAILED,
+                PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+
+        int count = 0;
+        for (DeadLetterMessage dlq : failedEvents) {
+            dlq.setStatus(DLQStatus.PENDING);
+            dlq.setRetryCount(0);
+            dlqRepository.save(dlq);
+            count++;
+        }
+
+        logger.info("Reset {} FAILED events to PENDING for retry", count);
+        return count;
+    }
+
+    @Async
+    public void processDeadLetterQueueAsync() {
+        logger.info("Processing DLQ triggered manually by admin");
+        try {
+            processDeadLetterQueue();
+        } catch (Exception e) {
+            logger.error("Error in async DLQ processing", e);
+            throw e;
+        }
     }
 
     private enum RetryResult {
