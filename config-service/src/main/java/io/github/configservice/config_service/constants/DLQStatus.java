@@ -1,4 +1,4 @@
-package io.github.configservice.config_service.model;
+package io.github.configservice.config_service.constants;
 
 public final class DLQStatus {
 
