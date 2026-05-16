@@ -1,4 +1,4 @@
-package io.github.configservice.config_service.exception;
+package io.github.configservice.config_service.dto;
 
 import java.time.LocalDateTime;
 
