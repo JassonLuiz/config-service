@@ -1,10 +1,9 @@
 package io.github.configservice.config_service.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.configservice.config_service.event.ConfigEvent;
-import io.github.configservice.config_service.model.DLQStatus;
+import io.github.configservice.config_service.constants.DLQStatus;
 import io.github.configservice.config_service.model.DeadLetterMessage;
 import io.github.configservice.config_service.repository.DeadLetterQueueRepository;
 import org.slf4j.Logger;
@@ -12,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;

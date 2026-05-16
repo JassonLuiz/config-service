@@ -2,11 +2,10 @@ package io.github.configservice.config_service.service;
 
 import io.github.configservice.config_service.dto.createDTO.ConfigEntryCreateDTO;
 import io.github.configservice.config_service.dto.responseDTO.ConfigEntryResponseDTO;
-import io.github.configservice.config_service.event.EventType;
 import io.github.configservice.config_service.exception.EnvironmentNotFoundException;
 import io.github.configservice.config_service.model.ConfigEntry;
 import io.github.configservice.config_service.model.Environment;
-import io.github.configservice.config_service.model.mapper.ConfigEntryMapper;
+import io.github.configservice.config_service.mapper.ConfigEntryMapper;
 import io.github.configservice.config_service.repository.ConfigEntryRepository;
 import io.github.configservice.config_service.repository.EnvironmentRepository;
 import io.github.configservice.config_service.service.validator.ConfigEntryValidator;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

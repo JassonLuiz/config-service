@@ -1,6 +1,6 @@
 package io.github.configservice.config_service.controller;
 
-import io.github.configservice.config_service.model.DLQStatus;
+import io.github.configservice.config_service.constants.DLQStatus;
 import io.github.configservice.config_service.model.DeadLetterMessage;
 import io.github.configservice.config_service.service.DeadLetterQueueService;
 import org.slf4j.Logger;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/admin/dlq")

@@ -1,4 +1,4 @@
-package io.github.configservice.config_service.model.mapper;
+package io.github.configservice.config_service.mapper;
 
 import io.github.configservice.config_service.dto.responseDTO.ConfigEntryResponseDTO;
 import io.github.configservice.config_service.model.ConfigEntry;
