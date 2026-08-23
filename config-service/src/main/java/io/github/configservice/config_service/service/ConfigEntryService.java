@@ -1,7 +1,7 @@
 package io.github.configservice.config_service.service;
 
 import io.github.configservice.config_service.dto.createDTO.ConfigEntryCreateDTO;
-import io.github.configservice.config_service.dto.responseDTO.ConfigEntryResponseDTO;
+import io.github.configservice.contracts.dto.ConfigEntryResponseDTO;
 import io.github.configservice.config_service.exception.EnvironmentNotFoundException;
 import io.github.configservice.config_service.model.ConfigEntry;
 import io.github.configservice.config_service.model.Environment;

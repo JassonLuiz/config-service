@@ -1,6 +1,6 @@
 package io.github.configservice.config_service.mapper;
 
-import io.github.configservice.config_service.dto.responseDTO.ConfigEntryResponseDTO;
+import io.github.configservice.contracts.dto.ConfigEntryResponseDTO;
 import io.github.configservice.config_service.model.ConfigEntry;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 package io.github.clientlibrary.client_library.consumer;
 
-import io.github.clientlibrary.client_library.event.ConfigEvent;
+import io.github.configservice.contracts.event.ConfigEvent;
 import io.github.clientlibrary.client_library.service.sync.ConfigSyncService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,6 @@
 package io.github.configservice.config_service.config;
 
-import io.github.configservice.config_service.event.ConfigEvent;
+import io.github.configservice.contracts.event.ConfigEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;

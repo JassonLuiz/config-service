@@ -1,6 +1,6 @@
 package io.github.springexample.springexample1.config;
 
-import io.github.clientlibrary.client_library.event.ConfigEvent;
+import io.github.configservice.contracts.event.ConfigEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,13 +52,11 @@ public class KafkaConfig {
 
 
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "io.github.clientlibrary.client_library.event");
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "io.github.configservice.contracts.event");
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, ConfigEvent.class.getName());
 
-        String typeMappings =
-                "configEvent:" + ConfigEvent.class.getName() + "," +
-                        "io.github.clientlibrary.client_library.event.ConfigEvent:" + ConfigEvent.class.getName();
+        String typeMappings = "configEvent:" + ConfigEvent.class.getName();
 
         props.put(JsonDeserializer.TYPE_MAPPINGS, typeMappings);
 
