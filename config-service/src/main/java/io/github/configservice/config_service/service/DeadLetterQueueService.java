@@ -2,7 +2,7 @@ package io.github.configservice.config_service.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.configservice.config_service.event.ConfigEvent;
+import io.github.configservice.contracts.event.ConfigEvent;
 import io.github.configservice.config_service.constants.DLQStatus;
 import io.github.configservice.config_service.model.DeadLetterMessage;
 import io.github.configservice.config_service.repository.DeadLetterQueueRepository;

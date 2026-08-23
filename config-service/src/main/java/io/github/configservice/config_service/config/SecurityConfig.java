@@ -1,5 +1,6 @@
 package io.github.configservice.config_service.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -16,11 +17,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Value("${security.admin.username:admin}")
+    private String adminUsername;
+
+    @Value("${security.admin.password:admin123}")
+    private String adminPassword;
+
     @Bean
     public InMemoryUserDetailsManager userDetailsManager(PasswordEncoder encoder){
         UserDetails user = User.builder()
-                .username("admin")
-                .password(encoder.encode("admin123"))
+                .username(adminUsername)
+                .password(encoder.encode(adminPassword))
                 .roles("ADMIN")
                 .build();
         return new InMemoryUserDetailsManager(user);
@@ -35,7 +42,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())

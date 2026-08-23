@@ -2,7 +2,7 @@ package io.github.configservice.config_service.controller;
 
 import io.github.configservice.config_service.dto.ConfigEntryBatchDTO;
 import io.github.configservice.config_service.dto.createDTO.ConfigEntryCreateDTO;
-import io.github.configservice.config_service.dto.responseDTO.ConfigEntryResponseDTO;
+import io.github.configservice.contracts.dto.ConfigEntryResponseDTO;
 import io.github.configservice.config_service.service.ConfigEntryService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;

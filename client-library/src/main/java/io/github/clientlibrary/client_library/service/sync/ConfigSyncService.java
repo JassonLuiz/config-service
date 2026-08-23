@@ -1,8 +1,8 @@
 package io.github.clientlibrary.client_library.service.sync;
 
 import io.github.clientlibrary.client_library.config.ConfigValueInjector;
-import io.github.clientlibrary.client_library.dto.ConfigEntryResponseDTO;
-import io.github.clientlibrary.client_library.event.ConfigEvent;
+import io.github.configservice.contracts.dto.ConfigEntryResponseDTO;
+import io.github.configservice.contracts.event.ConfigEvent;
 import io.github.clientlibrary.client_library.service.api.ConfigApiClient;
 import io.github.clientlibrary.client_library.service.cache.RedisWriterService;
 import org.slf4j.Logger;

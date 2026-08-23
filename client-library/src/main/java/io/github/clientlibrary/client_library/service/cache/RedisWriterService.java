@@ -2,7 +2,7 @@ package io.github.clientlibrary.client_library.service.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.clientlibrary.client_library.dto.ConfigEntryResponseDTO;
+import io.github.configservice.contracts.dto.ConfigEntryResponseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;

@@ -1,7 +1,7 @@
 package io.github.configservice.config_service.producer;
 
-import io.github.configservice.config_service.event.ConfigEvent;
-import io.github.configservice.config_service.event.EventType;
+import io.github.configservice.contracts.event.ConfigEvent;
+import io.github.configservice.contracts.event.EventType;
 import io.github.configservice.config_service.service.DeadLetterQueueService;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;

@@ -1,6 +1,6 @@
 package io.github.configservice.config_service.service;
 
-import io.github.configservice.config_service.event.EventType;
+import io.github.configservice.contracts.event.EventType;
 import io.github.configservice.config_service.model.ConfigEntry;
 import io.github.configservice.config_service.producer.KafkaProducer;
 import org.slf4j.Logger;
