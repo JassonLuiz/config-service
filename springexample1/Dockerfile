@@ -12,7 +12,9 @@ WORKDIR /app
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl \
  && rm -rf /var/lib/apt/lists/* \
- && useradd --system --create-home --uid 10001 appuser
+ && useradd --system --create-home --uid 10001 appuser \
+ && mkdir -p /app/logs \
+ && chown -R appuser:appuser /app
 COPY --from=builder /build/springexample1/target/springexample1-*.jar app.jar
 USER appuser
 EXPOSE 8085
